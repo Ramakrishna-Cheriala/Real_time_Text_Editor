@@ -2,9 +2,30 @@
 
 import { templates } from "@/constants/templates";
 import { cn } from "@/lib/utils";
+import { useMutation } from "convex/react";
+import { useRouter } from "next/navigation";
+import { api } from "../../../convex/_generated/api";
+import { useState } from "react";
 
 export const TemplateGallery = () => {
-  const isCreating = false;
+  const router = useRouter();
+  const create = useMutation(api.documents.create);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const onTemplateClick = (title: string, inititalContent: string) => {
+    setIsCreating(true);
+    create({ title: title, initialContent: inititalContent })
+      .then((documentId) => {
+        router.push(`/documents/${documentId}`);
+      })
+      .catch((error) => {
+        console.error("Error creating document:", error);
+        setIsCreating(false);
+      })
+      .finally(() => {
+        setIsCreating(false);
+      });
+  };
 
   return (
     <div className="bg-[#F1F3F4]">
@@ -21,7 +42,9 @@ export const TemplateGallery = () => {
             >
               <button
                 disabled={isCreating}
-                onClick={() => {}}
+                onClick={() => {
+                  onTemplateClick(template.title, "");
+                }}
                 style={{
                   backgroundImage: `url(${template.imageUrl})`,
                   backgroundSize: "cover",
